@@ -130,6 +130,71 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
+    def kb_support(self, fact_or_rule, indent):
+        space = ""
+        res = ""
+        for i in range(indent):
+            space = space + "  "
+        #res = space + "SUPPORTED BY" + '\n'
+        #space = space + "  "
+        if isinstance(fact_or_rule, Fact):
+            f_ind = self.facts.index(fact_or_rule)
+            fact = self.facts[f_ind]
+            for fr_pair in self.facts[f_ind].supported_by:
+                res = res + space + "SUPPORTED BY" + '\n'
+                #space = space + "  "
+                # print for the fact
+                res = res + space + "  " + "fact: " + str(fr_pair[0].statement)
+                if fr_pair[0].asserted:
+                    res = res + " ASSERTED" + '\n'
+                else:
+                    res = res + '\n'
+                if fr_pair[0].supported_by:
+                    res = res + self.kb_support(fr_pair[0], indent + 2)
+                # print for the rule
+                res = res + space + "  " + "rule: ("
+                tempstr = []
+                for item in fr_pair[1].lhs:
+                    tempstr.append(str(item))
+                res = res + ", ".join(tempstr)
+                res = res + ") -> " + str(fr_pair[1].rhs)
+                if fr_pair[1].asserted:
+                    res = res + " ASSERTED" + '\n'
+                else:
+                    res = res + '\n'
+                if fr_pair[1].supported_by:
+                    res = res + self.kb_support(fr_pair[1], indent + 2)
+        else:
+            r_ind = self.rules.index(fact_or_rule)
+            rule = self.rules[r_ind]
+            #space = space + "  "
+            for fr_pair in self.rules[r_ind].supported_by:
+                res = res + space + "SUPPORTED BY" + '\n'
+                #space = space + "  "
+                # print for the fact
+                res = res + space + "  " + "fact: " + str(fr_pair[0].statement)
+                if fr_pair[0].asserted:
+                    res = res + " ASSERTED" + '\n'
+                else:
+                    res = res + '\n'
+                if fr_pair[0].supported_by:
+                    res = res + self.kb_support(fr_pair[0], indent + 2)
+
+                # print for the rule
+                res = res + space + "  " + "rule: ("
+                tempstr = []
+                for item in fr_pair[1].lhs:
+                    tempstr.append(str(item))
+                res = res + ", ".join(tempstr)
+                res = res + ") -> " + str(fr_pair[1].rhs)
+                if fr_pair[1].asserted:
+                    res = res + " ASSERTED" + '\n'
+                else:
+                    res = res + '\n'
+                if fr_pair[1].supported_by:
+                    res = res + self.kb_support(fr_pair[1], indent + 2)
+        return res
+
     def kb_explain(self, fact_or_rule):
         """
         Explain where the fact or rule comes from
@@ -142,6 +207,30 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        res = ""
+        if isinstance (fact_or_rule, Fact):
+            if fact_or_rule in self.facts:
+                f_ind = self.facts.index(fact_or_rule)
+                fact = self.facts[f_ind]
+                res = res + "fact: " + str(fact.statement) + '\n'
+                if self.facts[f_ind].supported_by:
+                    res = res + self.kb_support(fact, 1)
+            else:
+                res = "Fact is not in the KB"
+        else:
+            if isinstance(fact_or_rule, Rule):
+                if fact_or_rule in self.rules:
+                    r_ind = self.rules.index(fact_or_rule)
+                    rule = self.rules[r_ind]
+                    res = res + "rule: ("
+                    for r in rule.lhs:
+                        res = res + str(r)
+                    res = res + ") -> " + str(rule.rhs)
+                    if self.rules[r_ind].supported_by:
+                        res = res + self.kb_support(rule, 1)
+                else:
+                    res = "Rule is not in the KB"
+        return res
 
 
 class InferenceEngine(object):
